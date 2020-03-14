@@ -1,0 +1,2 @@
+rootProject.name='Ding'
+include ':app'
