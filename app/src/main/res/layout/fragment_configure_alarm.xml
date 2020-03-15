@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ConfigureAlarmFragment">
+
+    <!--
+        android:paddingEnd="32dp"
+        android:paddingStart="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="16dp"
+        android:ems="10"
+    -->
+
+    <TextView
+        android:id="@+id/lblAlarmName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:text="Alarm name:"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/etAlarmName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="32dp"
+        android:ems="10"
+        android:inputType="textPersonName"
+        app:layout_constraintBaseline_toBaselineOf="@id/lblAlarmName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/lblAlarmName" />
+
+    <TextView
+        android:id="@+id/lblRepeat"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="Repeat:"
+        app:layout_constraintEnd_toStartOf="@id/etRepeatTimes"
+        app:layout_constraintTop_toBottomOf="@id/etAlarmName" />
+
+    <EditText
+        android:id="@+id/etRepeatTimes"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ems="2"
+        app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
+        app:layout_constraintStart_toStartOf="@id/etAlarmName" />
+
+    <TextView
+        android:id="@+id/lblInterval"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="times, each:"
+        app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
+        app:layout_constraintStart_toEndOf="@id/etRepeatTimes" />
+
+    <EditText
+        android:id="@+id/etInterval"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:ems="2"
+        app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
+        app:layout_constraintStart_toEndOf="@id/lblInterval" />
+
+    <Spinner
+        android:id="@+id/spnTimeUnits"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:entries="@array/timeunits"
+        app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
+        app:layout_constraintStart_toEndOf="@id/etInterval" />
+
+    <TextView
+        android:id="@+id/lblSound"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        android:text="Sound:"
+        app:layout_constraintEnd_toStartOf="@id/etRepeatTimes"
+        app:layout_constraintTop_toBottomOf="@id/etRepeatTimes" />
+
+    <Button
+        android:id="@+id/btnSound"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="Default Sound"
+        app:layout_constraintBaseline_toBaselineOf="@id/lblSound"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/etAlarmName" />
+
+    <Button
+        android:id="@+id/btnSave"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Save"
+        app:layout_constraintStart_toStartOf="@id/btnSound"
+        app:layout_constraintTop_toBottomOf="@id/btnSound" />
+
+    <Button
+        android:id="@+id/btnCancel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="Cancel"
+        app:layout_constraintBaseline_toBaselineOf="@id/btnSave"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
+</androidx.constraintlayout.widget.ConstraintLayout>
