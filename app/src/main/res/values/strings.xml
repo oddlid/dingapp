@@ -1,12 +1,17 @@
 <resources>
     <string name="app_name">Ding</string>
 
+    <string name="srv_notification_title">Ding Service</string>
+    <string name="srv_notification_text">X active alarms running in background</string>
+    <string name="srv_notification_stop_title">Shutdown</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
+    <!--
     <string-array name="timeunits">
         <item>Seconds</item>
         <item>Minutes</item>
         <item>Hours</item>
     </string-array>
+    -->
 </resources>

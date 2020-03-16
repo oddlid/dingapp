@@ -20,8 +20,21 @@ class AlarmListFragment : Fragment() {
 
         view.fabAddAlarm.setOnClickListener {
             // Start activity for adding alarm
-            val intent = Intent(activity, ConfigureAlarmActivity::class.java)
-            startActivityForResult(intent, ConfigureAlarmFragment.REQ_ALARM_ADD)
+            //val intent = Intent(activity, ConfigureAlarmActivity::class.java)
+            //startActivityForResult(intent, ConfigureAlarmActivity.CFG_ACTION_ADD)
+            //startActivityForResult(
+            //    ConfigureAlarmActivity.getLaunchIntent(this, ConfigureAlarmActivity.CFG_ACTION_ADD),
+            //    ConfigureAlarmActivity.CFG_ACTION_ADD
+            //)
+            context?.let {
+                startActivityForResult(
+                    ConfigureAlarmActivity.getLaunchIntent(
+                        it,
+                        ConfigureAlarmActivity.CFG_ACTION_ADD
+                    ),
+                    ConfigureAlarmActivity.CFG_ACTION_ADD
+                )
+            }
         }
 
         return view
@@ -29,7 +42,11 @@ class AlarmListFragment : Fragment() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        Timber.d("onActivityResult(): RequestCode: $requestCode, ResultCode: $resultCode")
+        //Timber.d("onActivityResult(): RequestCode: $requestCode, ResultCode: $resultCode")
+        when (requestCode) {
+            ConfigureAlarmActivity.CFG_ACTION_ADD -> Timber.d("Result for adding new alarm")
+            ConfigureAlarmActivity.CFG_ACTION_EDIT -> Timber.d("Result for editing existing alarm")
+        }
     }
 }
 

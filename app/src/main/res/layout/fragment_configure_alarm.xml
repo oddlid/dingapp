@@ -50,7 +50,7 @@
         android:id="@+id/etRepeatTimes"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:ems="2"
+        android:ems="3"
         app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
         app:layout_constraintStart_toStartOf="@id/etAlarmName" />
 
@@ -58,10 +58,12 @@
         android:id="@+id/lblInterval"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
         android:text="times, each:"
         app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
         app:layout_constraintStart_toEndOf="@id/etRepeatTimes" />
 
+    <!--
     <EditText
         android:id="@+id/etInterval"
         android:layout_width="0dp"
@@ -77,6 +79,16 @@
         android:entries="@array/timeunits"
         app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
         app:layout_constraintStart_toEndOf="@id/etInterval" />
+    -->
+
+    <TextView
+        android:id="@+id/lblTime"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="32dp"
+        android:text="00:00:00"
+        app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <TextView
         android:id="@+id/lblSound"
