@@ -112,14 +112,18 @@ data class Alarm(
                 //mldCurrentRepetition.value = currentRepetition
 
                 if (currentRepetition > repetitions) {
-                    Timber.d("Reached max repetitions. Disabling callback")
-                    cbRef = null
+                    if (null != cbRef) {
+                        Timber.d("Reached max repetitions. Disabling callback")
+                        cbRef = null
+                    }
                     if (!stopTimerWhenDone) {
                         cdTimer?.start()
                     } else {
-                        cdTimer = null
+                        //cdTimer = null
+                        disable()
                     }
                 } else {
+                    // Just loop forever until user presses disable
                     cdTimer?.start()
                 }
             }

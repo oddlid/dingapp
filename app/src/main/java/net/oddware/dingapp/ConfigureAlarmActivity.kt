@@ -9,17 +9,17 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 class ConfigureAlarmActivity : AppCompatActivity() {
     companion object {
         const val ALARM_CFG_ACTION = "net.oddware.dingapp.ALARM_CFG_ACTION"
-        const val ALARM_CFG_IDX = "net.oddware.dingapp.ALARM_CFG_IDX"
+        const val ALARM_CFG_ID = "net.oddware.dingapp.ALARM_CFG_ID"
         const val ALARM_OBJ = "net.oddware.dingapp.ALARM_OBJ"
         const val CFG_ACTION_ADD = 0xADD
         const val CFG_ACTION_EDIT = 0xEDD
-        const val INVALID_IDX = -1
+        const val INVALID_ID = -1
 
         @JvmStatic
-        fun getLaunchIntent(ctx: Context, action: Int, index: Int = INVALID_IDX): Intent {
+        fun getLaunchIntent(ctx: Context, action: Int, index: Int = INVALID_ID): Intent {
             return with(Intent(ctx, ConfigureAlarmActivity::class.java)) {
                 putExtra(ALARM_CFG_ACTION, action)
-                putExtra(ALARM_CFG_IDX, index)
+                putExtra(ALARM_CFG_ID, index)
             }
         }
     }
@@ -37,15 +37,10 @@ class ConfigureAlarmActivity : AppCompatActivity() {
         }
 
         // Determine if this activity was started with intent of creating a new alarm, or editing an existing one
-        val actionCode: Int
-        val alarmIdx: Int
         with(intent) {
-            actionCode = getIntExtra(ALARM_CFG_ACTION, INVALID_IDX)
-            alarmIdx = getIntExtra(ALARM_CFG_IDX, INVALID_IDX)
+            cfgFrag.cfgAction = getIntExtra(ALARM_CFG_ACTION, INVALID_ID)
+            cfgFrag.alarmID = getIntExtra(ALARM_CFG_ID, INVALID_ID)
         }
-
-        // Now, signal the fragment if we should add or edit...
-        cfgFrag.cfgAction = actionCode
 
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(bcReceiverForClose, DingService.getIntentFilterForClose())

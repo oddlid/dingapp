@@ -108,6 +108,13 @@ class AlarmListAdapter(val viewLifecycleOwner: LifecycleOwner) :
             }
         }
 
+        vh.itemView.setOnClickListener {
+            //Timber.d("Clicked alarm #${vh.adapterPosition}")
+            it.context.let { ctx ->
+                ctx.startActivity(ConfigureAlarmActivity.getLaunchIntent(ctx, ConfigureAlarmActivity.CFG_ACTION_EDIT, vh.adapterPosition))
+            }
+        }
+
         return vh
     }
 

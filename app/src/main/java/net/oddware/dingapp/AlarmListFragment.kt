@@ -26,6 +26,15 @@ class AlarmListFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_alarm_list, container, false)
 
+        alarmListAdapter = AlarmListAdapter(viewLifecycleOwner)
+        val lloMgr = LinearLayoutManager(view.context)
+        with(view.rvAlarmList) {
+            addItemDecoration(DividerItemDecoration(view.context, lloMgr.orientation))
+            layoutManager = lloMgr
+            setHasFixedSize(true)
+            adapter = alarmListAdapter
+        }
+
         view.fabAddAlarm.setOnClickListener {
             // Start activity for adding alarm
             //val intent = Intent(activity, ConfigureAlarmActivity::class.java)
@@ -38,20 +47,12 @@ class AlarmListFragment : Fragment() {
                 startActivityForResult(
                     ConfigureAlarmActivity.getLaunchIntent(
                         it,
-                        ConfigureAlarmActivity.CFG_ACTION_ADD
+                        ConfigureAlarmActivity.CFG_ACTION_ADD,
+                        alarmListAdapter.itemCount
                     ),
                     ConfigureAlarmActivity.CFG_ACTION_ADD
                 )
             }
-        }
-
-        alarmListAdapter = AlarmListAdapter(viewLifecycleOwner)
-        val lloMgr = LinearLayoutManager(view.context)
-        with(view.rvAlarmList) {
-            addItemDecoration(DividerItemDecoration(view.context, lloMgr.orientation))
-            layoutManager = lloMgr
-            setHasFixedSize(true)
-            adapter = alarmListAdapter
         }
 
         return view

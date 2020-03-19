@@ -26,7 +26,8 @@ class ConfigureAlarmFragment : Fragment() {
     }
 
     var cfgAction = ConfigureAlarmActivity.CFG_ACTION_ADD
-    var alarmObj: Alarm? = null
+    var alarmID = ConfigureAlarmActivity.INVALID_ID
+    private var alarmObj: Alarm? = null
 
     //var soundUri: Uri? = null
     private lateinit var alarmViewModel: AlarmViewModel
@@ -40,15 +41,16 @@ class ConfigureAlarmFragment : Fragment() {
 
         if (ConfigureAlarmActivity.CFG_ACTION_ADD == cfgAction) {
             alarmObj = Alarm() // create blank alarm if parent activity indicates to add new
+            alarmObj?.id = alarmID
+        } else if (ConfigureAlarmActivity.CFG_ACTION_EDIT == cfgAction) {
+            // Get alarm with given id from repo
+            Timber.d("Request to edit alarm #$alarmID")
         }
 
         view.btnSave.setOnClickListener {
             when (cfgAction) {
                 ConfigureAlarmActivity.CFG_ACTION_ADD -> {
                     Timber.d("Saving new alarm")
-                    //if (null == alarmObj) {
-                    //    alarmObj = Alarm()
-                    //}
                     alarmObj?.run {
                         name = view.etAlarmName.text.toString().trim()
                         repetitions = view.etRepeatTimes.text.toString().trim().toInt()
@@ -80,7 +82,7 @@ class ConfigureAlarmFragment : Fragment() {
             val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Choose sound")
-                //putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, object : Uri())
+                putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, alarmObj?.soundUri)
             }
             startActivityForResult(intent, REQ_SOUND_ADD)
         }
@@ -104,9 +106,9 @@ class ConfigureAlarmFragment : Fragment() {
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (Activity.RESULT_OK == resultCode && REQ_SOUND_ADD == requestCode) {
+        if (RESULT_OK == resultCode && REQ_SOUND_ADD == requestCode) {
             data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)?.run {
-                Timber.d("Sound picked: ${this.toString()}")
+                Timber.d("Sound picked: $this")
                 alarmObj?.soundUriStr = this.toString()
             }
         }

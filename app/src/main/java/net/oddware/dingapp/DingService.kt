@@ -93,7 +93,7 @@ class DingService : Service() {
                     val chan = NotificationChannel(
                         ctx.packageName,
                         "Notification channel name", //ctx.getString(""),
-                        NotificationManager.IMPORTANCE_DEFAULT
+                        NotificationManager.IMPORTANCE_LOW
                     ).apply {
                         description =
                             "Notification channel description" //ctx.getString(R.string.notification_channel_desc)
@@ -141,7 +141,7 @@ class DingService : Service() {
         startForeground(
             1,
             NotificationCompat.Builder(this, packageName).apply {
-                priority = NotificationCompat.PRIORITY_DEFAULT
+                priority = NotificationCompat.PRIORITY_LOW
                 setWhen(System.currentTimeMillis())
                 setSmallIcon(R.drawable.ic_timer)
                 setStyle(

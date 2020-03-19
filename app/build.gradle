@@ -13,7 +13,7 @@ android {
     }
 
     defaultConfig {
-        applicationId "net.oddware.ding"
+        applicationId "net.oddware.dingapp"
         minSdkVersion 26
         targetSdkVersion 29
         versionCode 1
