@@ -1,6 +1,7 @@
 package net.oddware.dingapp
 
 import android.app.Activity
+import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.media.RingtoneManager
 import android.net.Uri
@@ -9,11 +10,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
 import kotlinx.android.synthetic.main.fragment_configure_alarm.view.*
 import timber.log.Timber
 import java.time.LocalTime
-import java.time.format.DateTimeFormatter
+import java.util.*
 
 class ConfigureAlarmFragment : Fragment() {
     companion object {
@@ -24,6 +26,10 @@ class ConfigureAlarmFragment : Fragment() {
     }
 
     var cfgAction = ConfigureAlarmActivity.CFG_ACTION_ADD
+    var alarmObj: Alarm? = null
+
+    //var soundUri: Uri? = null
+    private lateinit var alarmViewModel: AlarmViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -32,10 +38,35 @@ class ConfigureAlarmFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_configure_alarm, container, false)
 
+        if (ConfigureAlarmActivity.CFG_ACTION_ADD == cfgAction) {
+            alarmObj = Alarm() // create blank alarm if parent activity indicates to add new
+        }
+
         view.btnSave.setOnClickListener {
             when (cfgAction) {
-                ConfigureAlarmActivity.CFG_ACTION_ADD -> Timber.d("Save new alarm")
-                ConfigureAlarmActivity.CFG_ACTION_EDIT -> Timber.d("Save existing alarm")
+                ConfigureAlarmActivity.CFG_ACTION_ADD -> {
+                    Timber.d("Saving new alarm")
+                    //if (null == alarmObj) {
+                    //    alarmObj = Alarm()
+                    //}
+                    alarmObj?.run {
+                        name = view.etAlarmName.text.toString().trim()
+                        repetitions = view.etRepeatTimes.text.toString().trim().toInt()
+                        time = LocalTime.parse(view.lblTime.text)
+                        stopTimerWhenDone = view.chkStopWhenDone.isChecked
+                        alarmViewModel.add(this)
+                    }
+                    //with(Intent()) {
+                    //    putExtra(ConfigureAlarmActivity.ALARM_OBJ, alarmObj)
+                    //    activity?.let {
+                    //        it.setResult(RESULT_OK, this)
+                    //    }
+                    //}
+                    activity?.setResult(RESULT_OK, null)
+                }
+                ConfigureAlarmActivity.CFG_ACTION_EDIT -> {
+                    Timber.d("Save existing alarm")
+                }
                 else -> Timber.d("Invalid code for save")
             }
             activity?.finish()
@@ -58,8 +89,9 @@ class ConfigureAlarmFragment : Fragment() {
             //val tm = LocalTime.of(0, 0)
             val picker = TimePickerDialog.newInstance({ _, hour, minute, second ->
                 val time = LocalTime.of(hour, minute, second)
-                Timber.d("Time picked: ${time.toString()}")
-                view.lblTime.text = time.format(DateTimeFormatter.ofPattern("hh:mm:ss"))
+                Timber.d("Time picked: ${timeFmt(time)}")
+                view.lblTime.text =
+                    timeFmt(time) //time.toString() //time.format(DateTimeFormatter.ofPattern("hh:mm:ss"))
             }, 0, 0, true).also {
                 it.enableSeconds(true)
             }
@@ -75,8 +107,22 @@ class ConfigureAlarmFragment : Fragment() {
         if (Activity.RESULT_OK == resultCode && REQ_SOUND_ADD == requestCode) {
             data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)?.run {
                 Timber.d("Sound picked: ${this.toString()}")
+                alarmObj?.soundUriStr = this.toString()
             }
         }
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
+
+        alarmViewModel = ViewModelProvider(this).get(AlarmViewModel::class.java)
+    }
+
+    private inline fun timeFmt(time: LocalTime?): String {
+        if (null == time) {
+            return "00:00:00"
+        }
+        return String.format(Locale.US, "%02d:%02d:%02d", time.hour, time.minute, time.second)
     }
 
 }

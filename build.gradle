@@ -27,3 +27,23 @@ allprojects {
 task clean(type: Delete) {
     delete rootProject.buildDir
 }
+
+ext {
+    v_appCompat = '1.1.0'
+    v_coreKtx = '1.2.0'
+    v_legacySupportV4 = '1.0.0'
+    v_junit = '4.13'
+    v_testJunit = '1.1.1'
+    v_espressoCore = '3.2.0'
+    v_constraintLayout = '2.0.0-beta4'
+    v_recyclerView = '1.1.0'
+    v_material = '1.1.0'
+    v_timber = '4.7.1'
+    v_timePicker = '4.2.3'
+    v_room = '2.2.4'
+    v_archLifeCycle = '2.2.0'
+    v_lifeCycle_CommonJ8 = '2.2.0'
+    v_androidxArch = '2.1.0'
+    v_coroutines = '1.3.2'
+    v_coreTesting = '2.1.0'
+}

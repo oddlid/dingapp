@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -23,7 +24,17 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
+            // Enables code shrinking, obfuscation, and optimization for only
+            // your project's release build type.
+            minifyEnabled true
+
+            // Enables resource shrinking, which is performed by the
+            // Android Gradle plugin.
+            shrinkResources true
+
+            // Includes the default ProGuard rules files that are packaged with
+            // the Android Gradle plugin. To learn more, go to the section about
+            // R8 configuration files.
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
@@ -33,15 +44,42 @@ android {
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation 'androidx.appcompat:appcompat:1.1.0'
-    implementation 'androidx.core:core-ktx:1.2.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    testImplementation 'junit:junit:4.13'
-    androidTestImplementation 'androidx.test.ext:junit:1.1.1'
-    androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
-    implementation "androidx.constraintlayout:constraintlayout:2.0.0-beta4"
-    implementation 'androidx.recyclerview:recyclerview:1.1.0'
-    implementation 'com.google.android.material:material:1.1.0'
-    implementation "com.jakewharton.timber:timber:4.7.1"
-    implementation 'com.wdullaer:materialdatetimepicker:4.2.3'
+    implementation "androidx.appcompat:appcompat:$rootProject.v_appCompat"
+    implementation "androidx.core:core-ktx:$rootProject.v_coreKtx"
+    implementation "androidx.legacy:legacy-support-v4:$rootProject.v_legacySupportV4"
+    testImplementation "junit:junit:$rootProject.v_junit"
+    androidTestImplementation "androidx.test.ext:junit:$rootProject.v_testJunit"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$rootProject.v_espressoCore"
+    implementation "androidx.constraintlayout:constraintlayout:$rootProject.v_constraintLayout"
+    implementation "androidx.recyclerview:recyclerview:$rootProject.v_recyclerView"
+    implementation "com.google.android.material:material:$rootProject.v_material"
+    implementation "com.jakewharton.timber:timber:$rootProject.v_timber"
+    implementation "com.wdullaer:materialdatetimepicker:$rootProject.v_timePicker"
+
+    implementation "androidx.room:room-runtime:$rootProject.v_room"
+    kapt "androidx.room:room-compiler:$rootProject.v_room" // For Kotlin use kapt instead of annotationProcessor
+
+    // optional - Kotlin Extensions and Coroutines support for Room
+    implementation "androidx.room:room-ktx:$rootProject.v_room"
+    // optional - RxJava support for Room
+    //implementation "androidx.room:room-rxjava2:$rootProject.v_room"
+    // optional - Guava support for Room, including Optional and ListenableFuture
+    //implementation "androidx.room:room-guava:$rootProject.v_room"
+    // Test helpers
+    testImplementation "androidx.room:room-testing:$rootProject.v_room"
+
+    // Lifecycle components
+    implementation "androidx.lifecycle:lifecycle-extensions:$rootProject.v_archLifeCycle"
+    //kapt "androidx.lifecycle:lifecycle-compiler:$rootProject.v_archLifeCycle"
+    implementation "android.arch.lifecycle:common-java8:$rootProject.v_lifeCycle_CommonJ8" // recommended over the above
+    androidTestImplementation "androidx.arch.core:core-testing:$rootProject.v_androidxArch"
+
+    // ViewModel Kotlin support
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:$rootProject.v_archLifeCycle"
+
+    // Coroutines
+    api "org.jetbrains.kotlinx:kotlinx-coroutines-android:$rootProject.v_coroutines"
+
+    // Testing
+    androidTestImplementation "androidx.arch.core:core-testing:$rootProject.v_coreTesting"
 }

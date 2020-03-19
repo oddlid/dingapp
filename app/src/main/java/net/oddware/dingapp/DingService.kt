@@ -24,6 +24,9 @@ class DingService : Service() {
         var isRunning = false
             private set
 
+        //@JvmStatic
+        //val alarms: MutableList<Alarm> = mutableListOf()
+
         @JvmStatic
         private fun sendIntent(ctx: Context, action: String) {
             Timber.d("sendIntent(): Sending intent with action: $action")
@@ -178,5 +181,12 @@ class DingService : Service() {
         Timber.d("Stopping foreground Ding Service")
         stopSelf()
         isRunning = false
+
+
+        //ViewModelProvider(this).get(AlarmViewModel::class.java)
+        //AlarmViewModel(application).clear() // does not work
+        AlarmRepository.clear()
+
+        closeApp(applicationContext)
     }
 }

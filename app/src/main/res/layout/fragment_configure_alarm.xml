@@ -90,6 +90,15 @@
         app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <CheckBox
+        android:id="@+id/chkStopWhenDone"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layoutDirection="rtl"
+        android:text="Stop timer when done"
+        app:layout_constraintEnd_toEndOf="@id/lblTime"
+        app:layout_constraintTop_toBottomOf="@id/etRepeatTimes" />
+
     <TextView
         android:id="@+id/lblSound"
         android:layout_width="0dp"
@@ -98,7 +107,7 @@
         android:layout_marginEnd="16dp"
         android:text="Sound:"
         app:layout_constraintEnd_toStartOf="@id/etRepeatTimes"
-        app:layout_constraintTop_toBottomOf="@id/etRepeatTimes" />
+        app:layout_constraintTop_toBottomOf="@id/chkStopWhenDone" />
 
     <Button
         android:id="@+id/btnSound"

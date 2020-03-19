@@ -2,8 +2,11 @@ package net.oddware.dingapp
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class AlarmListActivity : AppCompatActivity() {
+
+    val bcReceiverForClose = DingService.getBroadcastReceiverForClose(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -14,5 +17,12 @@ class AlarmListActivity : AppCompatActivity() {
             commit()
         }
 
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(bcReceiverForClose, DingService.getIntentFilterForClose())
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(bcReceiverForClose)
     }
 }

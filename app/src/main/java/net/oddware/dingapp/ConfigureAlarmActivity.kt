@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.localbroadcastmanager.content.LocalBroadcastManager
 
 class ConfigureAlarmActivity : AppCompatActivity() {
     companion object {
         const val ALARM_CFG_ACTION = "net.oddware.dingapp.ALARM_CFG_ACTION"
         const val ALARM_CFG_IDX = "net.oddware.dingapp.ALARM_CFG_IDX"
+        const val ALARM_OBJ = "net.oddware.dingapp.ALARM_OBJ"
         const val CFG_ACTION_ADD = 0xADD
         const val CFG_ACTION_EDIT = 0xEDD
         const val INVALID_IDX = -1
@@ -21,6 +23,8 @@ class ConfigureAlarmActivity : AppCompatActivity() {
             }
         }
     }
+
+    val bcReceiverForClose = DingService.getBroadcastReceiverForClose(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,5 +46,14 @@ class ConfigureAlarmActivity : AppCompatActivity() {
 
         // Now, signal the fragment if we should add or edit...
         cfgFrag.cfgAction = actionCode
+
+        LocalBroadcastManager.getInstance(this)
+            .registerReceiver(bcReceiverForClose, DingService.getIntentFilterForClose())
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(bcReceiverForClose)
+    }
+
 }
