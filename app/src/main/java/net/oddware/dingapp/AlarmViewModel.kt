@@ -41,5 +41,8 @@ class AlarmViewModel(application: Application) : AndroidViewModel(application) {
         alarmRepo.disableAll()
     }
 
+    fun get(index: Int): Alarm? {
+        return alarmRepo.get(index)
+    }
 
 }

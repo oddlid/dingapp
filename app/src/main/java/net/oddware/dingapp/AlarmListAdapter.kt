@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_alarm_list_item.view.*
 import timber.log.Timber
 import java.time.Duration
-import java.time.LocalTime
 import java.util.*
 
 class AlarmListAdapter(val viewLifecycleOwner: LifecycleOwner) :
@@ -23,9 +22,9 @@ class AlarmListAdapter(val viewLifecycleOwner: LifecycleOwner) :
             alarm = a
             with(itemView) {
                 txtAlarmName.text = a.name
-                txtReps.text = getRepsText(a)
-                txtTime.text = getTimeText(a)
-                chkEnabled.isChecked = a.enabled
+                txtReps.text = getRepsText(a.ldAlarmData.value)
+                txtTime.text = getTimeText(a.ldAlarmData.value)
+                chkEnabled.isChecked = a.ldAlarmData.value?.enabled ?: false
                 if (a.stopTimerWhenDone) {
                     ivStopWhenDone.setImageDrawable(null)
                 } else {
@@ -35,41 +34,61 @@ class AlarmListAdapter(val viewLifecycleOwner: LifecycleOwner) :
             //a.liveDataTimeUntilNextAlarm.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             //    itemView.txtTime.text = getTimeText(a) // this is stupid - should act on the duration passed as livedata
             //})
+            a.ldAlarmData.observe(viewLifecycleOwner, androidx.lifecycle.Observer { ad ->
+                with (itemView) {
+                    txtReps.text = getRepsText(ad)
+                    txtTime.text = getTimeText(ad)
+                    chkEnabled.isChecked = ad.enabled
+                }
+            })
         }
 
-        private fun getRepsText(a: Alarm): String {
-            return String.format(Locale.US, "X: %d/%d", a.currentRepetition, a.repetitions)
+        private inline fun getRepsText(ad: Alarm.AlarmData?): String {
+            if (null == ad) {
+                return "X: 0/0"
+            }
+            return String.format(Locale.US, "X: %d/%d", ad.currentRep, ad.maxReps)
         }
 
-        private fun getTimeText(a: Alarm): String {
+        private inline fun getTimeText(ad: Alarm.AlarmData?): String {
+            //if (null == ad) {
+            //    return "00:00:00"
+            //}
             //return when {
             //    a.overtime -> fmtLocalTime("+", a.time)
             //    a.enabled -> fmtDuration("-", a.timeUntilAlarm)
             //    else -> fmtLocalTime("", a.time)
             //}
-            if (a.enabled && !a.overtime) {
-                return fmtDuration("-", a.timeUntilAlarm)
+            //if (a.enabled && !a.overtime) {
+            //    return fmtDuration("-", a.timeUntilAlarm)
+            //}
+            //if (a.overtime) {
+            //    // not how it should be
+            //    return fmtLocalTime("+", a.time)
+            //}
+            //return fmtLocalTime("", a.time)
+            val data = ad ?: return "00:00:00"
+            if (null != data.timeSinceFinalAlarm) {
+                return fmtDuration("+", data.timeSinceFinalAlarm)
+            } else if (data.enabled && null != data.timeUntilNextAlarm) {
+                return fmtDuration("-", data.timeUntilNextAlarm)
             }
-            if (a.overtime) {
-                // not how it should be
-                return fmtLocalTime("+", a.time)
-            }
-            return fmtLocalTime("", a.time)
+            return fmtDuration("", data.interval)
         }
 
-        private inline fun fmtLocalTime(prefix: String, time: LocalTime?): String {
-            if (null == time) {
-                return "00:00:00"
-            }
-            return String.format(
-                Locale.US,
-                "%s%02d:%02d:%02d",
-                prefix,
-                time.hour,
-                time.minute,
-                time.second
-            )
-        }
+        //private inline fun fmtLocalTime(prefix: String, time: LocalTime?): String {
+        //    if (null == time) {
+        //        return "00:00:00"
+        //    }
+        //    return String.format(
+        //        Locale.US,
+        //        "%s%02d:%02d:%02d",
+        //        prefix,
+        //        time.hour,
+        //        time.minute,
+        //        time.second
+        //    )
+        //}
 
         private inline fun fmtDuration(prefix: String, time: Duration?): String {
             if (null == time) {
@@ -111,7 +130,13 @@ class AlarmListAdapter(val viewLifecycleOwner: LifecycleOwner) :
         vh.itemView.setOnClickListener {
             //Timber.d("Clicked alarm #${vh.adapterPosition}")
             it.context.let { ctx ->
-                ctx.startActivity(ConfigureAlarmActivity.getLaunchIntent(ctx, ConfigureAlarmActivity.CFG_ACTION_EDIT, vh.adapterPosition))
+                ctx.startActivity(
+                    ConfigureAlarmActivity.getLaunchIntent(
+                        ctx,
+                        ConfigureAlarmActivity.CFG_ACTION_EDIT,
+                        vh.adapterPosition
+                    )
+                )
             }
         }
 

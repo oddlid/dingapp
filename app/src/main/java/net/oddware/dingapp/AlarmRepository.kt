@@ -42,6 +42,10 @@ object AlarmRepository {
         return true
     }
 
+    private inline fun MutableLiveData<MutableList<Alarm>>.get(index: Int): Alarm? {
+        return value?.get(index)
+    }
+
     private inline fun MutableLiveData<MutableList<Alarm>>.disableAll(notify: Boolean) {
         value?.let {
             for (alarm in it) {
@@ -66,6 +70,10 @@ object AlarmRepository {
     fun add(alarm: Alarm) {
         Timber.d("Adding alarm to list...")
         alarms.add(alarm)
+    }
+
+    fun get(index: Int): Alarm? {
+        return alarms.get(index)
     }
 
     fun clear() {

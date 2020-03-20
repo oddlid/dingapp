@@ -1,6 +1,5 @@
 package net.oddware.dingapp
 
-import android.app.Activity
 import android.app.Activity.RESULT_OK
 import android.content.Intent
 import android.media.RingtoneManager
@@ -12,6 +11,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.wdullaer.materialdatetimepicker.time.TimePickerDialog
+import kotlinx.android.synthetic.main.fragment_configure_alarm.*
 import kotlinx.android.synthetic.main.fragment_configure_alarm.view.*
 import timber.log.Timber
 import java.time.LocalTime
@@ -39,12 +39,13 @@ class ConfigureAlarmFragment : Fragment() {
         // Inflate the layout for this fragment
         val view = inflater.inflate(R.layout.fragment_configure_alarm, container, false)
 
+        // We handle adding in here, but setting values for edit is in onActivityCreated to be able to use
+        // the viewModel
         if (ConfigureAlarmActivity.CFG_ACTION_ADD == cfgAction) {
-            alarmObj = Alarm() // create blank alarm if parent activity indicates to add new
+            // create blank alarm if parent activity indicates to add new
+            alarmObj = Alarm()
+            // ID will get passed from the list activity, simply as the first free list index
             alarmObj?.id = alarmID
-        } else if (ConfigureAlarmActivity.CFG_ACTION_EDIT == cfgAction) {
-            // Get alarm with given id from repo
-            Timber.d("Request to edit alarm #$alarmID")
         }
 
         view.btnSave.setOnClickListener {
@@ -56,15 +57,20 @@ class ConfigureAlarmFragment : Fragment() {
                         repetitions = view.etRepeatTimes.text.toString().trim().toInt()
                         time = LocalTime.parse(view.lblTime.text)
                         stopTimerWhenDone = view.chkStopWhenDone.isChecked
+                        if (null == soundUriStr) {
+                            soundUriStr = RingtoneManager.getActualDefaultRingtoneUri(
+                                context,
+                                RingtoneManager.TYPE_NOTIFICATION
+                            ).toString()
+                        }
+                        syncAlarmData()
                         alarmViewModel.add(this)
                     }
-                    //with(Intent()) {
-                    //    putExtra(ConfigureAlarmActivity.ALARM_OBJ, alarmObj)
-                    //    activity?.let {
-                    //        it.setResult(RESULT_OK, this)
-                    //    }
-                    //}
-                    activity?.setResult(RESULT_OK, null)
+                    activity?.setResult(RESULT_OK,
+                        Intent().apply {
+                            putExtra(ConfigureAlarmActivity.ALARM_CFG_ID, alarmObj?.id)
+                        }
+                    )
                 }
                 ConfigureAlarmActivity.CFG_ACTION_EDIT -> {
                     Timber.d("Save existing alarm")
@@ -82,7 +88,17 @@ class ConfigureAlarmFragment : Fragment() {
             val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_NOTIFICATION)
                 putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Choose sound")
-                putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, alarmObj?.soundUri)
+                putExtra(
+                    RingtoneManager.EXTRA_RINGTONE_EXISTING_URI,
+                    RingtoneManager.getActualDefaultRingtoneUri(
+                        context,
+                        RingtoneManager.TYPE_NOTIFICATION
+                    )
+                )
+                putExtra(
+                    RingtoneManager.EXTRA_RINGTONE_DEFAULT_URI,
+                    RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)
+                )
             }
             startActivityForResult(intent, REQ_SOUND_ADD)
         }
@@ -97,8 +113,8 @@ class ConfigureAlarmFragment : Fragment() {
             }, 0, 0, true).also {
                 it.enableSeconds(true)
             }
-            fragmentManager?.run {
-                picker.show(this, "Set interval")
+            activity?.supportFragmentManager?.run {
+                picker.show(this, "Set alarm interval")
             }
         }
 
@@ -108,8 +124,10 @@ class ConfigureAlarmFragment : Fragment() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (RESULT_OK == resultCode && REQ_SOUND_ADD == requestCode) {
             data?.getParcelableExtra<Uri>(RingtoneManager.EXTRA_RINGTONE_PICKED_URI)?.run {
-                Timber.d("Sound picked: $this")
+                val soundName = RingtoneManager.getRingtone(context, this).getTitle(context)
+                Timber.d("Sound picked: $this ($soundName)")
                 alarmObj?.soundUriStr = this.toString()
+                btnSound.text = soundName
             }
         }
     }
@@ -118,6 +136,25 @@ class ConfigureAlarmFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
 
         alarmViewModel = ViewModelProvider(this).get(AlarmViewModel::class.java)
+
+        // Now that the viewmodel have been set up, we can update the UI to reflect the chosen Alarm
+        // if we were opened to edit an existing alarm
+        if (ConfigureAlarmActivity.CFG_ACTION_EDIT == cfgAction) {
+            alarmObj = alarmViewModel.get(alarmID)
+            updateUI(alarmObj)
+        }
+    }
+
+    private fun updateUI(a: Alarm?) {
+        etAlarmName.setText(a?.name)
+        etRepeatTimes.setText(a?.repetitions?.toString())
+        lblTime.text = a?.time?.toString() // TODO: Make sure this works, or fix
+        chkStopWhenDone.isChecked = a?.stopTimerWhenDone ?: false
+        if (null == a?.soundUriStr) {
+            btnSound.text = "Pick Sound..."
+        } else {
+            btnSound.text = RingtoneManager.getRingtone(context, a.soundUri).getTitle(context)
+        }
     }
 
     private inline fun timeFmt(time: LocalTime?): String {

@@ -50,7 +50,10 @@
         android:id="@+id/etRepeatTimes"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:digits="0123456789"
+        android:gravity="end"
         android:ems="3"
+        android:inputType="number|none"
         app:layout_constraintBaseline_toBaselineOf="@id/lblRepeat"
         app:layout_constraintStart_toStartOf="@id/etAlarmName" />
 
@@ -114,7 +117,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginEnd="32dp"
-        android:text="Default Sound"
+        android:text="Pick Sound..."
         app:layout_constraintBaseline_toBaselineOf="@id/lblSound"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="@id/etAlarmName" />

@@ -2,6 +2,8 @@ package net.oddware.dingapp
 
 import android.net.Uri
 import android.os.CountDownTimer
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import timber.log.Timber
 import java.io.Serializable
 import java.time.Duration
@@ -19,17 +21,42 @@ data class Alarm(
     var stopTimerWhenDone: Boolean = false
 ) : Serializable, Comparable<Alarm> {
 
-    // Intention here is to use these for exposing via livedata
-    //data class RepetitionPair(var current: Int = 0, var total: Int = 0)
-    //data class TimePair()
+    // What data do we need to keep the list item UI in sync?
+    // - Max repetitions (int)
+    // - Current repetition (int)
+    // - Interval duration (Duration)
+    // - Current duration until next alarm (duration, or some time class)
+    // - Overtime duration (Duration): Time since final alarm was reached, if alarm is set to keep timer running
+    // - State: Disabled, enabled and counting down, enabled and counting up (overtime)
 
-    var enabled = false
-        private set
-    var currentRepetition = 0
-    val overtime: Boolean
-        get() {
-            return (enabled && currentRepetition > repetitions)
-        }
+    data class AlarmData(
+        var enabled: Boolean = false,
+        var maxReps: Int = 0,
+        var currentRep: Int = 0,
+        var interval: Duration? = null,
+        var timeUntilNextAlarm: Duration? = null,
+        var timeOfFinalAlarm: LocalTime? = null,
+        var timeSinceFinalAlarm: Duration? = null,
+        var stopTimerWhenDone: Boolean = false
+    )
+
+    private var _interval = time?.toDuration()
+    private val alarmData = AlarmData(
+        maxReps = repetitions,
+        interval = _interval,
+        timeUntilNextAlarm = _interval,
+        stopTimerWhenDone = stopTimerWhenDone
+    )
+    private val mldAlarmData: MutableLiveData<AlarmData> = MutableLiveData(alarmData)
+    val ldAlarmData: LiveData<AlarmData> = mldAlarmData
+
+    //var enabled = false
+    //    private set
+    //var currentRepetition = 0
+    //val overtime: Boolean
+    //    get() {
+    //        return (enabled && currentRepetition > repetitions)
+    //    }
 
     val soundUri: Uri?
         get() {
@@ -39,8 +66,8 @@ data class Alarm(
             return null
         }
 
-    var timeUntilAlarm: Duration? = null
-        private set
+    //var timeUntilAlarm: Duration? = null
+    //    private set
     //var doneAt: LocalDateTime? = null
 
     //private val mldTimeLeft: MutableLiveData<Duration> = MutableLiveData()
@@ -49,6 +76,15 @@ data class Alarm(
     //val liveDataCurrentRepetition = mldCurrentRepetition
 
     private var cdTimer: CountDownTimer? = null
+
+    private inline fun MutableLiveData<AlarmData>.notify() {
+        value = value
+    }
+
+    inline fun LocalTime.toDuration(): Duration {
+        val seconds = (second + (minute * 60) + (hour * 3600)).toLong()
+        return Duration.ofSeconds(seconds)
+    }
 
     private inline fun Duration.toDingString(): String {
         val hours = this.toHours()
@@ -63,23 +99,38 @@ data class Alarm(
         return other.time?.compareTo(time) ?: other.id.compareTo(id)
     }
 
+    // For usage after changing mirrored properties
+    fun syncAlarmData() {
+        val interval = time?.toDuration()
+        alarmData.let {
+            it.maxReps = repetitions
+            it.interval = interval
+            it.timeUntilNextAlarm = interval
+            it.stopTimerWhenDone = stopTimerWhenDone
+        }
+        mldAlarmData.notify()
+    }
+
     fun enable(callback: Runnable?) {
         Timber.d("Enabling alarm \"$name\"")
-        enabled = true
+        //enabled = true
+        alarmData.enabled = true
         startTimer(callback)
     }
 
     fun disable() {
         Timber.d("Disabling alarm \"$name\"")
-        enabled = false
+        alarmData.enabled = false
         cdTimer?.cancel()
         cdTimer = null
-        currentRepetition = 0
-        timeUntilAlarm = null
-        //mldTimeLeft.value = null
+        alarmData.currentRep = 0
+        alarmData.timeUntilNextAlarm = null
+        alarmData.timeOfFinalAlarm = null
+        alarmData.timeSinceFinalAlarm = null
+        mldAlarmData.notify()
     }
 
-    fun getNextAlarmTime(now: LocalDateTime): LocalDateTime? {
+    private fun getNextAlarmTime(now: LocalDateTime): LocalDateTime? {
         Timber.d("Calculating next alarm time...")
         val timeInterval = time ?: return null
         var targetTime = now.plusHours(timeInterval.hour.toLong())
@@ -87,7 +138,7 @@ data class Alarm(
         return targetTime.plusSeconds(timeInterval.second.toLong())
     }
 
-    fun startTimer(callback: Runnable?) {
+    private fun startTimer(callback: Runnable?) {
         if (null != cdTimer) {
             Timber.wtf("Timer already running, returning")
             return
@@ -100,7 +151,8 @@ data class Alarm(
         }
         val interval = now.until(later, ChronoUnit.MILLIS)
         val tickTime = 1000L // 1 second
-        currentRepetition = 1
+        //currentRepetition = 1
+        alarmData.currentRep = 1
         var cbRef = callback // need a var to be able to null later
 
         Timber.d("Creating CountDownTimer with interval: $interval, tickTime: $tickTime")
@@ -108,31 +160,41 @@ data class Alarm(
             override fun onFinish() {
                 Timber.d("onFinish(): Reached alarm time")
                 cbRef?.run()
-                currentRepetition++
+                //currentRepetition++
                 //mldCurrentRepetition.value = currentRepetition
+                alarmData.currentRep++
 
-                if (currentRepetition > repetitions) {
+                if (alarmData.currentRep > repetitions) {
                     if (null != cbRef) {
                         Timber.d("Reached max repetitions. Disabling callback")
                         cbRef = null
                     }
                     if (!stopTimerWhenDone) {
+                        if (null == alarmData.timeOfFinalAlarm) {
+                            alarmData.timeOfFinalAlarm = LocalTime.now()
+                        }
                         cdTimer?.start()
                     } else {
                         //cdTimer = null
                         disable()
                     }
                 } else {
-                    // Just loop forever until user presses disable
                     cdTimer?.start()
                 }
+                mldAlarmData.notify()
             }
 
             override fun onTick(millisUntilFinished: Long) {
-                timeUntilAlarm = Duration.ofMillis(millisUntilFinished)
+                //timeUntilAlarm = Duration.ofMillis(millisUntilFinished)
                 //mldTimeLeft.postValue(timeUntilAlarm)
                 //mldTimeLeft.value = timeUntilAlarm
-                Timber.d("onTick(): Time until alarm: ${timeUntilAlarm?.toDingString()}")
+                //Timber.d("onTick(): Time until alarm: ${timeUntilAlarm?.toDingString()}")
+                alarmData.timeUntilNextAlarm = Duration.ofMillis(millisUntilFinished)
+                val finalTime = alarmData.timeOfFinalAlarm
+                if (null != finalTime) {
+                    alarmData.timeSinceFinalAlarm = Duration.ofMillis(finalTime.until(LocalDateTime.now(), ChronoUnit.MILLIS))
+                }
+                mldAlarmData.notify()
             }
         }.start()
     }
