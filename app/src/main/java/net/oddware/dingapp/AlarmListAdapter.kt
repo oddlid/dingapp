@@ -1,5 +1,6 @@
 package net.oddware.dingapp
 
+import android.media.RingtoneManager
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,7 +9,6 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import kotlinx.android.synthetic.main.fragment_alarm_list_item.view.*
-import timber.log.Timber
 import java.time.Duration
 import java.util.*
 
@@ -35,7 +35,7 @@ class AlarmListAdapter(val viewLifecycleOwner: LifecycleOwner) :
             //    itemView.txtTime.text = getTimeText(a) // this is stupid - should act on the duration passed as livedata
             //})
             a.ldAlarmData.observe(viewLifecycleOwner, androidx.lifecycle.Observer { ad ->
-                with (itemView) {
+                with(itemView) {
                     txtReps.text = getRepsText(ad)
                     txtTime.text = getTimeText(ad)
                     chkEnabled.isChecked = ad.enabled
@@ -119,8 +119,12 @@ class AlarmListAdapter(val viewLifecycleOwner: LifecycleOwner) :
 
         vh.itemView.chkEnabled.setOnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
-                vh.alarm?.let {
-                    it.enable(Runnable { Timber.d("Callback activated! Alarm sound: ${it.soundUriStr}") })
+                vh.alarm?.let { a ->
+                    //it.enable(Runnable { Timber.d("Callback activated! Alarm sound: ${it.soundUriStr}") })
+                    //val alarmSound = RingtoneManager.getRingtone(vh.itemView.context, a.soundUri)
+                    a.enable(Runnable {
+                        RingtoneManager.getRingtone(vh.itemView.context, a.soundUri).play()
+                    })
                 }
             } else {
                 vh.alarm?.disable()

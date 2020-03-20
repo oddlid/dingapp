@@ -49,28 +49,29 @@ class ConfigureAlarmFragment : Fragment() {
         }
 
         view.btnSave.setOnClickListener {
+            alarmObj?.run {
+                name = view.etAlarmName.text.toString().trim()
+                repetitions = view.etRepeatTimes.text.toString().trim().toInt()
+                time = LocalTime.parse(view.lblTime.text)
+                stopTimerWhenDone = view.chkStopWhenDone.isChecked
+                if (null == soundUriStr) {
+                    soundUriStr = RingtoneManager.getActualDefaultRingtoneUri(
+                        context,
+                        RingtoneManager.TYPE_NOTIFICATION
+                    ).toString()
+                }
+                syncAlarmData()
+                //alarmViewModel.add(this)
+            }
+            activity?.setResult(RESULT_OK,
+                Intent().apply {
+                    putExtra(ConfigureAlarmActivity.ALARM_CFG_ID, alarmObj?.id)
+                }
+            )
             when (cfgAction) {
                 ConfigureAlarmActivity.CFG_ACTION_ADD -> {
                     Timber.d("Saving new alarm")
-                    alarmObj?.run {
-                        name = view.etAlarmName.text.toString().trim()
-                        repetitions = view.etRepeatTimes.text.toString().trim().toInt()
-                        time = LocalTime.parse(view.lblTime.text)
-                        stopTimerWhenDone = view.chkStopWhenDone.isChecked
-                        if (null == soundUriStr) {
-                            soundUriStr = RingtoneManager.getActualDefaultRingtoneUri(
-                                context,
-                                RingtoneManager.TYPE_NOTIFICATION
-                            ).toString()
-                        }
-                        syncAlarmData()
-                        alarmViewModel.add(this)
-                    }
-                    activity?.setResult(RESULT_OK,
-                        Intent().apply {
-                            putExtra(ConfigureAlarmActivity.ALARM_CFG_ID, alarmObj?.id)
-                        }
-                    )
+                    alarmObj?.run { alarmViewModel.add(this) }
                 }
                 ConfigureAlarmActivity.CFG_ACTION_EDIT -> {
                     Timber.d("Save existing alarm")
@@ -104,13 +105,17 @@ class ConfigureAlarmFragment : Fragment() {
         }
 
         view.lblTime.setOnClickListener {
-            //val tm = LocalTime.of(0, 0)
-            val picker = TimePickerDialog.newInstance({ _, hour, minute, second ->
-                val time = LocalTime.of(hour, minute, second)
-                Timber.d("Time picked: ${timeFmt(time)}")
-                view.lblTime.text =
-                    timeFmt(time) //time.toString() //time.format(DateTimeFormatter.ofPattern("hh:mm:ss"))
-            }, 0, 0, true).also {
+            val picker = TimePickerDialog.newInstance(
+                { _, hour, minute, second ->
+                    val time = LocalTime.of(hour, minute, second)
+                    Timber.d("Time picked: ${timeFmt(time)}")
+                    view.lblTime.text = timeFmt(time)
+                },
+                alarmObj?.time?.hour ?: 0,
+                alarmObj?.time?.minute ?: 0,
+                alarmObj?.time?.second ?: 0,
+                true
+            ).also {
                 it.enableSeconds(true)
             }
             activity?.supportFragmentManager?.run {

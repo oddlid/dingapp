@@ -43,8 +43,12 @@ class DingService : Service() {
 
         @JvmStatic
         fun start(ctx: Context) {
-            Timber.d("start(): Sending intent for starting service...")
-            sendIntent(ctx, ACTION_START)
+            if (!isRunning) {
+                Timber.d("start(): Sending intent for starting service...")
+                sendIntent(ctx, ACTION_START)
+            } else {
+                Timber.d("start(): DingService is already running. /ignore")
+            }
         }
 
         @JvmStatic
@@ -54,6 +58,7 @@ class DingService : Service() {
 
         @JvmStatic
         fun closeApp(ctx: Context): Boolean {
+            //stop(ctx) // This gave some weird results! App refused to start again after closing...
             return sendBroadcast(ctx, ACTION_CLOSE_APP)
         }
 
@@ -129,7 +134,7 @@ class DingService : Service() {
                     Timber.d("onStartCommand(): calling startForegroundService()...")
                     startForegroundService()
                 }
-                ACTION_STOP -> stopForegroundService()
+                ACTION_STOP -> stopForegroundService() // this will call closeApp at the end
             }
         }
         return super.onStartCommand(intent, flags, startId)
@@ -159,7 +164,7 @@ class DingService : Service() {
                 )
                 addAction(
                     NotificationCompat.Action(
-                        android.R.drawable.ic_delete,
+                        android.R.drawable.ic_lock_power_off,
                         getString(R.string.srv_notification_stop_title),
                         PendingIntent.getService(
                             this@DingService,
@@ -185,7 +190,8 @@ class DingService : Service() {
 
         //ViewModelProvider(this).get(AlarmViewModel::class.java)
         //AlarmViewModel(application).clear() // does not work
-        AlarmRepository.clear()
+        //AlarmRepository.clear() // this is just until we get a better routine for disabling all and saving
+        AlarmRepository.disableAll()
 
         closeApp(applicationContext)
     }

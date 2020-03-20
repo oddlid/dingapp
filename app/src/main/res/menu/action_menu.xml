@@ -2,9 +2,16 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_delete_all"
+        android:icon="@android:drawable/ic_menu_delete"
+        android:orderInCategory="100"
+        android:title="Delete all alarms"
+        app:showAsAction="always" />
+    <item
         android:id="@+id/action_shutdown"
         android:icon="@android:drawable/ic_lock_power_off"
-        android:orderInCategory="100"
+        android:orderInCategory="101"
         android:title="Shutdown"
         app:showAsAction="always" />
+
 </menu>

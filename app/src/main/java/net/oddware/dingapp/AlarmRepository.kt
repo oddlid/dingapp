@@ -52,7 +52,7 @@ object AlarmRepository {
                 alarm.disable()
             }
         }
-        if (notify) {
+        if (notify && null != value) {
             value = value
         }
     }
@@ -77,7 +77,7 @@ object AlarmRepository {
     }
 
     fun clear() {
-        Timber.d("Disabling all alarms")
+        Timber.d("Deleting all alarms")
         alarms.clear()
     }
 

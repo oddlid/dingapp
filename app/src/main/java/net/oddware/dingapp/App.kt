@@ -14,7 +14,9 @@ class App : Application() {
 
         Timber.d("Creating notification  channel...")
         DingService.createNotificationChannel(applicationContext)
-        Timber.d("Attempting to start Ding Service...")
-        DingService.start(applicationContext)
+        // TODO: Find out bug here, that makes the service not start again if it's been shut down,
+        //  and you reopen the app without force closing it first.
+        //Timber.d("Attempting to start Ding Service...")
+        //DingService.start(applicationContext)
     }
 }

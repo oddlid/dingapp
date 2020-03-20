@@ -151,7 +151,6 @@ data class Alarm(
         }
         val interval = now.until(later, ChronoUnit.MILLIS)
         val tickTime = 1000L // 1 second
-        //currentRepetition = 1
         alarmData.currentRep = 1
         var cbRef = callback // need a var to be able to null later
 
@@ -160,8 +159,6 @@ data class Alarm(
             override fun onFinish() {
                 Timber.d("onFinish(): Reached alarm time")
                 cbRef?.run()
-                //currentRepetition++
-                //mldCurrentRepetition.value = currentRepetition
                 alarmData.currentRep++
 
                 if (alarmData.currentRep > repetitions) {
@@ -175,7 +172,6 @@ data class Alarm(
                         }
                         cdTimer?.start()
                     } else {
-                        //cdTimer = null
                         disable()
                     }
                 } else {
@@ -185,10 +181,6 @@ data class Alarm(
             }
 
             override fun onTick(millisUntilFinished: Long) {
-                //timeUntilAlarm = Duration.ofMillis(millisUntilFinished)
-                //mldTimeLeft.postValue(timeUntilAlarm)
-                //mldTimeLeft.value = timeUntilAlarm
-                //Timber.d("onTick(): Time until alarm: ${timeUntilAlarm?.toDingString()}")
                 alarmData.timeUntilNextAlarm = Duration.ofMillis(millisUntilFinished)
                 val finalTime = alarmData.timeOfFinalAlarm
                 if (null != finalTime) {
