@@ -10,7 +10,6 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.temporal.ChronoUnit
-import java.util.*
 
 data class Alarm(
     var id: Int = 0,
@@ -50,14 +49,6 @@ data class Alarm(
     private val mldAlarmData: MutableLiveData<AlarmData> = MutableLiveData(alarmData)
     val ldAlarmData: LiveData<AlarmData> = mldAlarmData
 
-    //var enabled = false
-    //    private set
-    //var currentRepetition = 0
-    //val overtime: Boolean
-    //    get() {
-    //        return (enabled && currentRepetition > repetitions)
-    //    }
-
     val soundUri: Uri?
         get() {
             if (null != soundUriStr) {
@@ -66,15 +57,6 @@ data class Alarm(
             return null
         }
 
-    //var timeUntilAlarm: Duration? = null
-    //    private set
-    //var doneAt: LocalDateTime? = null
-
-    //private val mldTimeLeft: MutableLiveData<Duration> = MutableLiveData()
-    //val liveDataTimeUntilNextAlarm: LiveData<Duration> = mldTimeLeft // public reference is RO
-    //private val mldCurrentRepetition: MutableLiveData<Int> = MutableLiveData()
-    //val liveDataCurrentRepetition = mldCurrentRepetition
-
     private var cdTimer: CountDownTimer? = null
 
     private inline fun MutableLiveData<AlarmData>.notify() {
@@ -82,21 +64,21 @@ data class Alarm(
     }
 
     inline fun LocalTime.toDuration(): Duration {
-        val seconds = (second + (minute * 60) + (hour * 3600)).toLong()
-        return Duration.ofSeconds(seconds)
+        return Duration.ofSeconds((second + (minute * 60) + (hour * 3600)).toLong())
     }
 
-    private inline fun Duration.toDingString(): String {
-        val hours = this.toHours()
-        var d = this.minusHours(hours)
-        val minutes = d.toMinutes()
-        d = d.minusMinutes(minutes)
-        val seconds = d.seconds
-        return String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
-    }
+    //private inline fun Duration.toDingString(): String {
+    //    val hours = this.toHours()
+    //    var d = this.minusHours(hours)
+    //    val minutes = d.toMinutes()
+    //    d = d.minusMinutes(minutes)
+    //    val seconds = d.seconds
+    //    return String.format(Locale.US, "%02d:%02d:%02d", hours, minutes, seconds)
+    //}
 
     override fun compareTo(other: Alarm): Int {
-        return other.time?.compareTo(time) ?: other.id.compareTo(id)
+        //return other.time?.compareTo(time) ?: other.id.compareTo(id)
+        return id.compareTo(other.id)
     }
 
     // For usage after changing mirrored properties
@@ -113,20 +95,21 @@ data class Alarm(
 
     fun enable(callback: Runnable?) {
         Timber.d("Enabling alarm \"$name\"")
-        //enabled = true
         alarmData.enabled = true
         startTimer(callback)
     }
 
     fun disable() {
         Timber.d("Disabling alarm \"$name\"")
-        alarmData.enabled = false
         cdTimer?.cancel()
         cdTimer = null
-        alarmData.currentRep = 0
-        alarmData.timeUntilNextAlarm = null
-        alarmData.timeOfFinalAlarm = null
-        alarmData.timeSinceFinalAlarm = null
+        with(alarmData) {
+            enabled = false
+            currentRep = 0
+            timeUntilNextAlarm = null
+            timeOfFinalAlarm = null
+            timeSinceFinalAlarm = null
+        }
         mldAlarmData.notify()
     }
 
@@ -146,13 +129,13 @@ data class Alarm(
         val now = LocalDateTime.now()
         val later = getNextAlarmTime(now)
         if (null == later) {
-            Timber.wtf("startTimer(): Got null or future time. Check that alarm.time is not null!")
+            Timber.wtf("startTimer(): Got null for future time. Check that alarm.time is not null!")
             return
         }
         val interval = now.until(later, ChronoUnit.MILLIS)
         val tickTime = 1000L // 1 second
         alarmData.currentRep = 1
-        var cbRef = callback // need a var to be able to null later
+        var cbRef = callback // need a var to be able to null the reference later
 
         Timber.d("Creating CountDownTimer with interval: $interval, tickTime: $tickTime")
         cdTimer = object : CountDownTimer(interval, tickTime) {
@@ -192,18 +175,3 @@ data class Alarm(
     }
 
 }
-
-// Just keeping this down here for reference
-// This was not the best solution. See below for the version used in ConfigureAlarmFragment right now
-//fun getTimeString(): String =
-//    time?.format(DateTimeFormatter.ofPattern("hh:mm:ss")) ?: "00:00:00"
-
-//private inline fun timeFmt(time: LocalTime?): String {
-//    // Unlike when using DateTimeFormatter + time.format, this way will return 00 when that is
-//    // what's chosen, and not convert it to 12. Also, seconds are included not matter if 0 or not.
-//    if (null == time) {
-//        return "00:00:00"
-//    }
-//    return String.format(Locale.US, "%02d:%02d:%02d", time.hour, time.minute, time.second)
-//}
-
